@@ -62,19 +62,23 @@ Mat **init_biases() {
     return biases;
 }
 
-// Calculating the output of the neural network
-Mat *propagate(Mat *input, Mat **hidden_layers, Mat **weights, Mat **biases) {
+// Calculating the output of the neural network using an activation function and
+// the input
+Mat *propagate(double (*actFnct)(double), Mat *input, Mat **hidden_layers,
+               Mat **weights, Mat **biases) {
     hidden_layers[0] =
-        relu_mat(mat_add(mat_multiply(weights[0], input), biases[0]));
+        apply(actFnct, (mat_add(mat_multiply(weights[0], input), biases[0])));
 
     for (int i = 1; i < NUM_H_LAYERS; i++) {
-        hidden_layers[i] = relu_mat(
+        hidden_layers[i] = apply(
+            actFnct,
             mat_add(mat_multiply(weights[i], hidden_layers[i - 1]), biases[i]));
     }
 
     Mat *output = mat_init(OUTPUT_SIZE, 1);
-    output = relu_mat(mat_add(
-        mat_multiply(weights[NUM_H_LAYERS], hidden_layers[NUM_H_LAYERS - 1]),
-        biases[NUM_H_LAYERS]));
+    output =
+        apply(actFnct, (mat_add(mat_multiply(weights[NUM_H_LAYERS],
+                                             hidden_layers[NUM_H_LAYERS - 1]),
+                                biases[NUM_H_LAYERS])));
     return output;
 }

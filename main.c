@@ -25,22 +25,25 @@ int main(int argc, char **argv) {
     char tmpStr[MAX_LINE_LEN];
     fgets(tmpStr, MAX_LINE_LEN, inputData);
 
+    int dataSize = 1000;
+    int numWrong = 0;
     int *label = malloc(sizeof(int));
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < dataSize; i++) {
         Mat *input = dataToMat(inputData, label);
         Mat *inputCol = mat_flatten(input);
 
-        Mat *output = propagate(inputCol, hiddenLayers, weights, biases);
+        Mat *output =
+            propagate(sigmoid, inputCol, hiddenLayers, weights, biases);
         int guess = maxIndex(output);
-
-        // printf("Label: %d\n", label[0]);
-        // printf("Guess: %d\n", guess);
 
         if (label[0] != guess) {
             printf("Error at line %d\n", i + 2);
             printf("Label: %d\n", label[0]);
             printf("Guess: %d\n", guess);
             mat_printI(input);
+            numWrong++;
         }
     }
+    double percentWrong = ((double)numWrong / dataSize) * 100;
+    printf("Percent wrong: %lf %%", percentWrong);
 }

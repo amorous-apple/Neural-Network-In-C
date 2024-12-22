@@ -5,6 +5,7 @@
 #include "utils_mat.h"
 
 double relu(double input);
-Mat *relu_mat(Mat *m);
+double sigmoid(double input);
+Mat *apply(double (*ptr)(double), Mat *m);
 
 #endif
