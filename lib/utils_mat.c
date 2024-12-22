@@ -24,7 +24,7 @@ Mat *mat_init(int rows, int cols) {
     }
 
     for (int i = 0; i < rows; i++) {
-        matrix->values[i] = valArr + i * rows;
+        matrix->values[i] = valArr + i * cols;
     }
 
     return matrix;
@@ -42,7 +42,7 @@ void mat_print(Mat *m) {
     for (int i = 0; i < m->rows; i++) {
         // printf("r_%d: ", i);
         for (int j = 0; j < m->cols; j++) {
-            printf("%.1lf", m->values[i][j]);
+            printf("%.2lf", m->values[i][j]);
             if (j < m->cols - 1) {
                 printf(",");
             }
@@ -63,7 +63,7 @@ void mat_printI(Mat *m) {
 }
 
 char intToASCII(int val) {
-    char *gradient = " ,-~:;=!*#$@";
+    char *gradient = " .,-~:;=!*#$@";
     int gradLeng = strlen(gradient);
 
     int valPerGrad = 255 / (gradLeng - 1);
@@ -80,4 +80,100 @@ void mat_populate(Mat *m, double val) {
             m->values[i][j] = val;
         }
     }
+}
+
+// Filling a matrix with the values m+n at [m][n] for tests
+void mat_populate2(Mat *m) {
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            m->values[i][j] = i + j;
+        }
+    }
+}
+
+// Filling a matrix with random doubles from -1 to 1
+void mat_populate_rand(Mat *m) {
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            m->values[i][j] = calc_random(-1, 1);
+        }
+    }
+}
+
+// Calculating a random double between lowerBound and upperBound
+double calc_random(double lowerBound, double upperBound) {
+    double difference = upperBound - lowerBound;
+
+    // Generating a random double between 0 and 1
+    double rando = (double)rand() / RAND_MAX;
+    double adjusted = (difference * rando) + lowerBound;
+
+    return adjusted;
+}
+
+// Returns the column vector of a matrix *m
+Mat *mat_flatten(Mat *m) {
+    Mat *matrix = mat_init(m->rows * m->cols, 1);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            matrix->values[i * m->cols + j][0] = m->values[i][j];
+        }
+    }
+
+    return matrix;
+}
+
+// Performing and returning the matrix multiplication of B times A
+Mat *mat_multiply(Mat *B, Mat *A) {
+    if (B->cols != A->rows) {
+        printf("Invalid matrix multiplication of %dx%d with %dx%d!\n", B->rows,
+               B->cols, A->rows, A->cols);
+        exit(EXIT_FAILURE);
+    }
+    Mat *matrix = mat_init(B->rows, A->cols);
+    for (int i = 0; i < matrix->rows; i++) {
+        for (int j = 0; j < matrix->cols; j++) {
+            double subTotal = 0;
+            for (int k = 0; k < A->rows; k++) {
+                subTotal += A->values[k][j] * B->values[i][k];
+            }
+
+            matrix->values[i][j] = subTotal;
+        }
+    }
+    return matrix;
+}
+
+// Adding matrix src to matrix dest (changing matrix dest)
+Mat *mat_add(Mat *dest, Mat *src) {
+    if (dest->rows != src->rows || dest->cols != src->cols) {
+        printf("Invalid addition of matrices with sizes %dx%d with %dx%d\n",
+               dest->rows, dest->cols, src->rows, src->cols);
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < dest->rows; i++) {
+        for (int j = 0; j < dest->cols; j++) {
+            dest->values[i][j] += src->values[i][j];
+        }
+    }
+
+    return dest;
+}
+
+// Returning the index of the greatest output values (the NN's guess)
+int maxIndex(Mat *output) {
+    if (output->cols != 1) {
+        perror("Invalid number of columns for an output!\n");
+        exit(EXIT_FAILURE);
+    }
+    double tmpMax = 0;
+    int tmpMaxIndex = 0;
+    for (int i = 0; i < output->rows; i++) {
+        if (output->values[i][0] > tmpMax) {
+            tmpMax = output->values[i][0];
+            tmpMaxIndex = i;
+        }
+    }
+    return tmpMaxIndex;
 }

@@ -14,9 +14,20 @@ typedef struct {
 
 Mat *mat_init(int rows, int cols);
 void mat_free(Mat *m);
+
 void mat_print(Mat *m);
 void mat_printI(Mat *m);
 char intToASCII(int val);
+
 void mat_populate(Mat *m, double val);
+void mat_populate2(Mat *m);
+void mat_populate_rand(Mat *m);
+double calc_random(double lowerBound, double upperBound);
+
+Mat *mat_flatten(Mat *m);
+Mat *mat_multiply(Mat *B, Mat *A);
+Mat *mat_add(Mat *dest, Mat *src);
+
+int maxIndex(Mat *output);
 
 #endif
