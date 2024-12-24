@@ -24,7 +24,8 @@ void mat_populate2(Mat *m);
 void mat_populate_rand(Mat *m);
 double calc_random(double lowerBound, double upperBound);
 
-Mat *mat_flatten(Mat *m);
+void mat_flatten(Mat **m);
+void mat_unflatten(Mat **m, int cols);
 Mat *mat_multiply(Mat *B, Mat *A);
 Mat *mat_add(Mat *dest, Mat *src);
 

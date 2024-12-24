@@ -1,5 +1,39 @@
 #include "neural.h"
 
+// Initializing a network struct to contain the neural network data
+Network *net_init() {
+    Network *net = malloc(sizeof(Network));
+    if (net == NULL) {
+        perror("Error allocating memory for net\n");
+        exit(EXIT_FAILURE);
+    }
+
+    Mat **hiddenLayers = init_h_layers();
+
+    Mat **weights = init_weights();
+    weights[0] = fread_mat("./weights/weights1.txt");
+    weights[1] = fread_mat("./weights/weights2.txt");
+    Mat **biases = init_biases();
+
+    net->hiddenLayers = hiddenLayers;
+    net->weights = weights;
+    net->biases = biases;
+
+    return net;
+}
+
+// Freeing all of the memory taken by a network
+void net_free(Network *net) {
+    for (int i = 0; i < NUM_H_LAYERS; i++) {
+        mat_free(net->hiddenLayers[i]);
+    }
+    for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
+        mat_free(net->weights[i]);
+        mat_free(net->biases[i]);
+    }
+    free(net);
+}
+
 // Initializing matrices to store all of the hidden layer values
 Mat **init_h_layers() {
     Mat **h_layers = malloc(NUM_H_LAYERS * sizeof(Mat *));
@@ -62,23 +96,24 @@ Mat **init_biases() {
     return biases;
 }
 
-// Calculating the output of the neural network using an activation function and
-// the input
-Mat *propagate(double (*actFnct)(double), Mat *input, Mat **hidden_layers,
-               Mat **weights, Mat **biases) {
-    hidden_layers[0] =
-        apply(actFnct, (mat_add(mat_multiply(weights[0], input), biases[0])));
+// Calculating the output of the neural network using an activation function,
+// the input, and the weights
+Mat *propagate(double (*actFnct)(double), Mat *input, Network *net) {
+    net->hiddenLayers[0] =
+        apply(actFnct,
+              (mat_add(mat_multiply(net->weights[0], input), net->biases[0])));
 
     for (int i = 1; i < NUM_H_LAYERS; i++) {
-        hidden_layers[i] = apply(
+        net->hiddenLayers[i] = apply(
             actFnct,
-            mat_add(mat_multiply(weights[i], hidden_layers[i - 1]), biases[i]));
+            mat_add(mat_multiply(net->weights[i], net->hiddenLayers[i - 1]),
+                    net->biases[i]));
     }
 
     Mat *output = mat_init(OUTPUT_SIZE, 1);
-    output =
-        apply(actFnct, (mat_add(mat_multiply(weights[NUM_H_LAYERS],
-                                             hidden_layers[NUM_H_LAYERS - 1]),
-                                biases[NUM_H_LAYERS])));
+    output = apply(actFnct,
+                   (mat_add(mat_multiply(net->weights[NUM_H_LAYERS],
+                                         net->hiddenLayers[NUM_H_LAYERS - 1]),
+                            net->biases[NUM_H_LAYERS])));
     return output;
 }

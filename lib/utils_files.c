@@ -9,6 +9,19 @@ FILE *openDataFile(char *fileName) {
     return pfile;
 }
 
+// Opening the input file and skipping over the first line (labeling)
+FILE *openInputFile(char *fileName) {
+    FILE *inputData = fopen(fileName, "r");
+    if (inputData == NULL) {
+        printf("Error opening dataFile %s\n", fileName);
+        exit(EXIT_FAILURE);
+    }
+    char tmpStr[MAX_LINE_LEN];
+    fgets(tmpStr, MAX_LINE_LEN, inputData);
+
+    return inputData;
+}
+
 Mat *fread_mat(char *filename) {
     FILE *pfile = openDataFile(filename);
 
@@ -30,17 +43,17 @@ Mat *fread_mat(char *filename) {
     return matrix;
 }
 
+// Reading the input data into a colum vector
 Mat *dataToMat(FILE *pfile, int *label) {
     char tmpStr[MAX_LINE_LEN];
     fgets(tmpStr, MAX_LINE_LEN, pfile);
 
     label[0] = atoi(strtok(tmpStr, ","));
 
-    Mat *fMat = mat_init(MAT_SIZE, MAT_SIZE);
-    for (int i = 0; i < MAT_SIZE; i++) {
-        for (int j = 0; j < MAT_SIZE; j++) {
-            fMat->values[i][j] = atoi(strtok(NULL, ","));
-        }
+    Mat *fMat = mat_init(MAT_SIZE * MAT_SIZE, 1);
+    for (int i = 0; i < MAT_SIZE * MAT_SIZE; i++) {
+        fMat->values[i][0] = atoi(strtok(NULL, ","));
     }
+
     return fMat;
 }

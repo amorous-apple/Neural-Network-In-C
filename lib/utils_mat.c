@@ -111,17 +111,39 @@ double calc_random(double lowerBound, double upperBound) {
     return adjusted;
 }
 
-// Returns the column vector of a matrix *m
-Mat *mat_flatten(Mat *m) {
-    Mat *matrix = mat_init(m->rows * m->cols, 1);
+// Flattening a matrix pointer m
+void mat_flatten(Mat **m) {
+    Mat *matrix = mat_init((*m)->rows * (*m)->cols, 1);
 
-    for (int i = 0; i < m->rows; i++) {
-        for (int j = 0; j < m->cols; j++) {
-            matrix->values[i * m->cols + j][0] = m->values[i][j];
+    for (int i = 0; i < (*m)->rows; i++) {
+        for (int j = 0; j < (*m)->cols; j++) {
+            matrix->values[i * (*m)->cols + j][0] = (*m)->values[i][j];
         }
     }
 
-    return matrix;
+    mat_free((*m));
+    *m = matrix;
+}
+
+// Unnflattening a matrix to one with cols columns
+void mat_unflatten(Mat **m, int cols) {
+    if ((*m)->rows % cols != 0) {
+        printf(
+            "A matrix with %d rows cannot be split into one with colums of "
+            "length %d!\n",
+            (*m)->rows, cols);
+        exit(EXIT_FAILURE);
+    }
+    Mat *matrix = mat_init((*m)->rows / cols, cols);
+
+    for (int i = 0; i < matrix->rows; i++) {
+        for (int j = 0; j < matrix->cols; j++) {
+            matrix->values[i][j] = (*m)->values[i * cols + j][0];
+        }
+    }
+
+    mat_free((*m));
+    *m = matrix;
 }
 
 // Performing and returning the matrix multiplication of B times A

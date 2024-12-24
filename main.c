@@ -14,35 +14,29 @@ int main(int argc, char **argv) {
 
     init(argc, argv);
 
-    Mat **hiddenLayers = init_h_layers();
-    Mat **weights = init_weights();
-    weights[0] = fread_mat("./weights/weights1.txt");
-    weights[1] = fread_mat("./weights/weights2.txt");
-    Mat **biases = init_biases();
+    Network *net = net_init();
 
-    FILE *inputData = openDataFile("./data/mnist_test.csv");
-
-    char tmpStr[MAX_LINE_LEN];
-    fgets(tmpStr, MAX_LINE_LEN, inputData);
+    FILE *inputData = openInputFile("./data/mnist_test.csv");
 
     int dataSize = 1000;
     int numWrong = 0;
-    int *label = malloc(sizeof(int));
     for (int i = 0; i < dataSize; i++) {
-        Mat *input = dataToMat(inputData, label);
-        Mat *inputCol = mat_flatten(input);
+        int *label = malloc(sizeof(int));
 
-        Mat *output =
-            propagate(sigmoid, inputCol, hiddenLayers, weights, biases);
+        Mat *input = dataToMat(inputData, label);
+
+        Mat *output = propagate(sigmoid, input, net);
         int guess = maxIndex(output);
 
-        if (label[0] != guess) {
-            printf("Error at line %d\n", i + 2);
-            printf("Label: %d\n", label[0]);
-            printf("Guess: %d\n", guess);
-            mat_printI(input);
+        if (*label != guess) {
+            // printf("Error at line %d\n", i + 2);
+            // printf("Label: %d\n", label[0]);
+            // printf("Guess: %d\n", guess);
+            // mat_unflatten(&input, MAT_SIZE);
+            // mat_printI(input);
             numWrong++;
         }
+        free(label);
     }
     double percentWrong = ((double)numWrong / dataSize) * 100;
     printf("Percent wrong: %lf %%", percentWrong);

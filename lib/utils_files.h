@@ -8,6 +8,7 @@
 #include "utils_mat.h"
 
 FILE *openDataFile(char *fileName);
+FILE *openInputFile(char *fileName);
 Mat *fread_mat(char *filename);
 Mat *dataToMat(FILE *pfile, int *label);
 
