@@ -14,21 +14,48 @@ int main(int argc, char **argv) {
 
     init(argc, argv);
 
-    Network *net = net_init();
-
     FILE *inputData = openInputFile("./data/mnist_test.csv");
-
     int dataSize = 1000;
-    int numWrong = 0;
+
+    // Loading all of the data into an array of matrices and labels
+    int *labels = malloc(dataSize * sizeof(int));
+    Mat **inputs = malloc(dataSize * sizeof(Mat *));
     for (int i = 0; i < dataSize; i++) {
         int *label = malloc(sizeof(int));
+        inputs[i] = dataToMat(inputData, label);
+        labels[i] = label[0];
+        free(label);
+    }
 
-        Mat *input = dataToMat(inputData, label);
+    // for (int i = 0; i < dataSize; i++) {
+    //     printf("Line: %d\n", i + 2);
+    //     printf("Label: %d\n", labels[i]);
+    //     mat_unflatten(&inputs[i], MAT_SIZE);
+    //     mat_printI(inputs[i]);
+    // }
+    printf("Input read from file.\n");
 
-        Mat *output = propagate(sigmoid, input, net);
-        int guess = maxIndex(output);
+    Mat **weights = init_weights();
+    weights[0] = fread_mat("./weights/weights1.txt");
+    weights[1] = fread_mat("./weights/weights2.txt");
+    Mat **biases = init_biases();
 
-        if (*label != guess) {
+    int *guesses = malloc(dataSize * sizeof(int));
+#pragma omp parallel for
+    for (int i = 0; i < dataSize; i++) {
+        Network *net = net_init(weights, biases);
+        Mat *output = propagate(sigmoid, inputs[i], net);
+        guesses[i] = maxIndex(output);
+
+        free(output);
+        net_free(net);
+    }
+    printf("Input propagated through network.\n");
+
+    // Checking guesses
+    int numWrong = 0;
+    for (int i = 0; i < dataSize; i++) {
+        if (labels[i] != guesses[i]) {
             // printf("Error at line %d\n", i + 2);
             // printf("Label: %d\n", label[0]);
             // printf("Guess: %d\n", guess);
@@ -36,8 +63,8 @@ int main(int argc, char **argv) {
             // mat_printI(input);
             numWrong++;
         }
-        free(label);
     }
+
     double percentWrong = ((double)numWrong / dataSize) * 100;
     printf("Percent wrong: %lf %%", percentWrong);
 }

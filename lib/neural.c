@@ -1,7 +1,7 @@
 #include "neural.h"
 
 // Initializing a network struct to contain the neural network data
-Network *net_init() {
+Network *net_init(Mat **weights, Mat **biases) {
     Network *net = malloc(sizeof(Network));
     if (net == NULL) {
         perror("Error allocating memory for net\n");
@@ -9,11 +9,6 @@ Network *net_init() {
     }
 
     Mat **hiddenLayers = init_h_layers();
-
-    Mat **weights = init_weights();
-    weights[0] = fread_mat("./weights/weights1.txt");
-    weights[1] = fread_mat("./weights/weights2.txt");
-    Mat **biases = init_biases();
 
     net->hiddenLayers = hiddenLayers;
     net->weights = weights;
@@ -27,10 +22,10 @@ void net_free(Network *net) {
     for (int i = 0; i < NUM_H_LAYERS; i++) {
         mat_free(net->hiddenLayers[i]);
     }
-    for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
-        mat_free(net->weights[i]);
-        mat_free(net->biases[i]);
-    }
+    // for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
+    //     mat_free(net->weights[i]);
+    //     mat_free(net->biases[i]);
+    // }
     free(net);
 }
 
