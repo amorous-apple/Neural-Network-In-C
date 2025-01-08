@@ -3,15 +3,19 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "utils_mat.h"
+#include "utils_files.h"
 
 extern const int MAT_SIZE;
 extern const int OUTPUT_SIZE;
 extern const int MAX_LINE_LEN;
+extern const int TRAINING_DATA_SIZE;
 
 extern double LEARNING_RATE;
 extern int NUM_H_LAYERS;
 extern int *NUM_H_LAYER_NODES;
 
 void init(int argc, char **argv);
+Mat **init_trainingData(int *labels);
 
 #endif

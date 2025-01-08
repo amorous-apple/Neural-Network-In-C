@@ -18,6 +18,8 @@ Mat **init_h_layers();
 Mat **init_weights();
 Mat **init_biases();
 Mat *propagate(double (*actFnct)(double), Mat *input, Network *net);
+Mat *prePropagate(double (*actFnct)(double), Mat *input, Network *net);
+int *init_labels(int dataSize);
 void test_weights(Mat **weights, Mat **biases);
 
 #endif

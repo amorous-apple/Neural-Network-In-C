@@ -43,7 +43,7 @@ Mat *fread_mat(char *filename) {
     return matrix;
 }
 
-// Reading the input data into a colum vector
+// Reading the input data into a column vector
 Mat *dataToMat(FILE *pfile, int *label) {
     char tmpStr[MAX_LINE_LEN];
     fgets(tmpStr, MAX_LINE_LEN, pfile);

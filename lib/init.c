@@ -3,6 +3,7 @@
 const int MAT_SIZE = 28;
 const int OUTPUT_SIZE = 10;
 const int MAX_LINE_LEN = 5000;
+const int TRAINING_DATA_SIZE = 60000;
 
 double LEARNING_RATE = 0.1;
 int NUM_H_LAYERS;
@@ -33,4 +34,18 @@ void init(int argc, char **argv) {
         }
         return;
     }
+}
+
+Mat **init_trainingData(int *labels) {
+    FILE *trainingDataFile = openInputFile("./data/mnist_train.csv");
+    Mat **trainingData = malloc(TRAINING_DATA_SIZE * sizeof(Mat *));
+    if (trainingData == NULL) {
+        perror("Error allocating memory for training data\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < TRAINING_DATA_SIZE; i++) {
+        trainingData[i] = dataToMat(trainingDataFile, &labels[i]);
+    }
+    return trainingData;
 }

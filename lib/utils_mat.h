@@ -28,6 +28,7 @@ void mat_flatten(Mat **m);
 void mat_unflatten(Mat **m, int cols);
 Mat *mat_multiply(Mat *B, Mat *A);
 Mat *mat_add(Mat *dest, Mat *src);
+Mat *mat_sub(Mat *dest, Mat *src);
 Mat *schur_product(Mat *A, Mat *B);
 
 int maxIndex(Mat *output);

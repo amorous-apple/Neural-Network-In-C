@@ -9,8 +9,20 @@ double relu(double input) {
     }
 }
 
-// Running the sigmoid function in input
+// Running the derivative of the ReLu function on input
+double drelu(double input) {
+    if (input < 0) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+// Running the sigmoid function on input
 double sigmoid(double input) { return 1.0 / (1 + exp(-input)); }
+
+// Running the derivative of the sigmoid function on input
+double dsigmoid(double input) { return exp(input) / pow(exp(input) + 1, 2); }
 
 // Running the ReLu function on all values of an input matrix m
 Mat *apply(double (*ptr)(double), Mat *m) {

@@ -85,7 +85,7 @@ Mat **init_biases() {
 
     for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
         mat_populate(biases[i], 0);
-        // mat_populate_rand(biases[i]);
+        mat_populate_rand(biases[i]);
     }
 
     return biases;
@@ -113,6 +113,35 @@ Mat *propagate(double (*actFnct)(double), Mat *input, Network *net) {
     return output;
 }
 
+// Calculating a forward propagation, but skipping the last application of the
+// activation function (needed for back-propagation)
+Mat *prePropagate(double (*actFnct)(double), Mat *input, Network *net) {
+    net->hiddenLayers[0] =
+        apply(actFnct,
+              (mat_add(mat_multiply(net->weights[0], input), net->biases[0])));
+
+    for (int i = 1; i < NUM_H_LAYERS; i++) {
+        net->hiddenLayers[i] = apply(
+            actFnct,
+            mat_add(mat_multiply(net->weights[i], net->hiddenLayers[i - 1]),
+                    net->biases[i]));
+    }
+
+    Mat *output = mat_init(OUTPUT_SIZE, 1);
+    output = (mat_add(mat_multiply(net->weights[NUM_H_LAYERS],
+                                   net->hiddenLayers[NUM_H_LAYERS - 1]),
+                      net->biases[NUM_H_LAYERS]));
+    return output;
+}
+int *init_labels(int dataSize) {
+    int *labels = malloc(dataSize * sizeof(int));
+    if (labels == NULL) {
+        perror("Error allocating memory for labels\n");
+        exit(EXIT_FAILURE);
+    }
+    return labels;
+}
+
 // Testing the percent error yielded by the given weights and biases when
 // running the test data
 void test_weights(Mat **weights, Mat **biases) {
@@ -120,11 +149,7 @@ void test_weights(Mat **weights, Mat **biases) {
     int dataSize = 10000;
 
     // Loading all of the data into an array of matrices and labels
-    int *labels = malloc(dataSize * sizeof(int));
-    if (labels == NULL) {
-        perror("Error allocating memory for labels\n");
-        exit(EXIT_FAILURE);
-    }
+    int *labels = init_labels(dataSize);
 
     Mat **inputs = malloc(dataSize * sizeof(Mat *));
     if (inputs == NULL) {
@@ -133,14 +158,7 @@ void test_weights(Mat **weights, Mat **biases) {
     }
 
     for (int i = 0; i < dataSize; i++) {
-        int *label = malloc(sizeof(int));
-        if (label == NULL) {
-            printf("Error allocating memory for label %d\n", i);
-            exit(EXIT_FAILURE);
-        }
-        inputs[i] = dataToMat(testData, label);
-        labels[i] = label[0];
-        free(label);
+        inputs[i] = dataToMat(testData, &labels[i]);
     }
 
     printf("Input read from file.\n");

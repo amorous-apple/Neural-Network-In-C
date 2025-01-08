@@ -42,7 +42,7 @@ void mat_print(Mat *m) {
     for (int i = 0; i < m->rows; i++) {
         // printf("r_%d: ", i);
         for (int j = 0; j < m->cols; j++) {
-            printf("%.2lf", m->values[i][j]);
+            printf("%.4lf", m->values[i][j]);
             if (j < m->cols - 1) {
                 printf(",");
             }
@@ -177,6 +177,23 @@ Mat *mat_add(Mat *dest, Mat *src) {
     for (int i = 0; i < dest->rows; i++) {
         for (int j = 0; j < dest->cols; j++) {
             dest->values[i][j] += src->values[i][j];
+        }
+    }
+
+    return dest;
+}
+
+// Subtracting matrix src from matrix dest (dest = dest - src)(changing matrix
+// dest)
+Mat *mat_sub(Mat *dest, Mat *src) {
+    if (dest->rows != src->rows || dest->cols != src->cols) {
+        printf("Invalid subtraction of matrices with sizes %dx%d with %dx%d\n",
+               dest->rows, dest->cols, src->rows, src->cols);
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < dest->rows; i++) {
+        for (int j = 0; j < dest->cols; j++) {
+            dest->values[i][j] -= src->values[i][j];
         }
     }
 
