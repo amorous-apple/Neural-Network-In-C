@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     init(argc, argv);
 
     FILE *inputData = openInputFile("./data/mnist_test.csv");
-    int dataSize = 1000;
+    int dataSize = 10000;
 
     // Loading all of the data into an array of matrices and labels
     int *labels = malloc(dataSize * sizeof(int));
@@ -27,12 +27,6 @@ int main(int argc, char **argv) {
         free(label);
     }
 
-    // for (int i = 0; i < dataSize; i++) {
-    //     printf("Line: %d\n", i + 2);
-    //     printf("Label: %d\n", labels[i]);
-    //     mat_unflatten(&inputs[i], MAT_SIZE);
-    //     mat_printI(inputs[i]);
-    // }
     printf("Input read from file.\n");
 
     Mat **weights = init_weights();
@@ -56,11 +50,11 @@ int main(int argc, char **argv) {
     int numWrong = 0;
     for (int i = 0; i < dataSize; i++) {
         if (labels[i] != guesses[i]) {
-            // printf("Error at line %d\n", i + 2);
-            // printf("Label: %d\n", label[0]);
-            // printf("Guess: %d\n", guess);
-            // mat_unflatten(&input, MAT_SIZE);
-            // mat_printI(input);
+            printf("Error at line %d\n", i + 2);
+            printf("Label: %d\n", labels[i]);
+            printf("Guess: %d\n", guesses[i]);
+            mat_unflatten(&inputs[i], MAT_SIZE);
+            mat_printI(inputs[i]);
             numWrong++;
         }
     }
