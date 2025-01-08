@@ -112,3 +112,71 @@ Mat *propagate(double (*actFnct)(double), Mat *input, Network *net) {
                             net->biases[NUM_H_LAYERS])));
     return output;
 }
+
+// Testing the percent error yielded by the given weights and biases when
+// running the test data
+void test_weights(Mat **weights, Mat **biases) {
+    FILE *testData = openInputFile("./data/mnist_test.csv");
+    int dataSize = 10000;
+
+    // Loading all of the data into an array of matrices and labels
+    int *labels = malloc(dataSize * sizeof(int));
+    if (labels == NULL) {
+        perror("Error allocating memory for labels\n");
+        exit(EXIT_FAILURE);
+    }
+
+    Mat **inputs = malloc(dataSize * sizeof(Mat *));
+    if (inputs == NULL) {
+        perror("Error allocating memory for inputs\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < dataSize; i++) {
+        int *label = malloc(sizeof(int));
+        if (label == NULL) {
+            printf("Error allocating memory for label %d\n", i);
+            exit(EXIT_FAILURE);
+        }
+        inputs[i] = dataToMat(testData, label);
+        labels[i] = label[0];
+        free(label);
+    }
+
+    printf("Input read from file.\n");
+
+    int *guesses = malloc(dataSize * sizeof(int));
+#pragma omp parallel for
+    for (int i = 0; i < dataSize; i++) {
+        Network *net = net_init(weights, biases);
+        Mat *output = propagate(sigmoid, inputs[i], net);
+        guesses[i] = maxIndex(output);
+
+        net_free(net);
+        mat_free(output);
+    }
+    printf("Input propagated through network.\n");
+
+    // Checking guesses
+    int numWrong = 0;
+    for (int i = 0; i < dataSize; i++) {
+        if (labels[i] != guesses[i]) {
+            // printf("Error at line %d\n", i + 2);
+            // printf("Label: %d\n", labels[i]);
+            // printf("Guess: %d\n", guesses[i]);
+            // mat_unflatten(&inputs[i], MAT_SIZE);
+            // mat_printI(inputs[i]);
+            numWrong++;
+        }
+    }
+
+    double percentWrong = ((double)numWrong / dataSize) * 100;
+    printf("Percent wrong: %lf %%", percentWrong);
+
+    fclose(testData);
+    free(labels);
+    for (int i = 0; i < dataSize; i++) {
+        mat_free(inputs[i]);
+    }
+    free(guesses);
+}

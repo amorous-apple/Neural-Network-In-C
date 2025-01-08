@@ -199,3 +199,22 @@ int maxIndex(Mat *output) {
     }
     return tmpMaxIndex;
 }
+
+// Calculating and returning the Schur Product (AKA Hadamard Product) of two
+// matrices A and B
+Mat *schur_product(Mat *A, Mat *B) {
+    if (A->rows != B->rows || A->cols != B->cols) {
+        printf("Invalid Schur Product of %dx%d with %dx%d!\n", A->rows, A->cols,
+               B->rows, B->cols);
+        exit(EXIT_FAILURE);
+    }
+
+    Mat *results = mat_init(A->rows, A->cols);
+    for (int i = 0; i < A->rows; i++) {
+        for (int j = 0; j < A->cols; j++) {
+            results->values[i][j] = A->values[i][j] * B->values[i][j];
+        }
+    }
+
+    return results;
+}
