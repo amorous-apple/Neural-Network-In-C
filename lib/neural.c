@@ -105,33 +105,56 @@ Mat *propagate(double (*actFnct)(double), Mat *input, Network *net) {
                     net->biases[i]));
     }
 
-    Mat *output = mat_init(OUTPUT_SIZE, 1);
-    output = apply(actFnct,
-                   (mat_add(mat_multiply(net->weights[NUM_H_LAYERS],
-                                         net->hiddenLayers[NUM_H_LAYERS - 1]),
-                            net->biases[NUM_H_LAYERS])));
+    Mat *output = apply(
+        actFnct, (mat_add(mat_multiply(net->weights[NUM_H_LAYERS],
+                                       net->hiddenLayers[NUM_H_LAYERS - 1]),
+                          net->biases[NUM_H_LAYERS])));
     return output;
 }
 
 // Calculating a forward propagation, but skipping the last application of the
-// activation function (needed for back-propagation)
+// activation function and storing the derivatives of the activation function in
+// the hidden layers
 Mat *prePropagate(double (*actFnct)(double), Mat *input, Network *net) {
-    net->hiddenLayers[0] =
-        apply(actFnct,
-              (mat_add(mat_multiply(net->weights[0], input), net->biases[0])));
+    // Storing the unactivated values through propagation
+    Mat **preVals = init_h_layers();
 
-    for (int i = 1; i < NUM_H_LAYERS; i++) {
-        net->hiddenLayers[i] = apply(
-            actFnct,
-            mat_add(mat_multiply(net->weights[i], net->hiddenLayers[i - 1]),
-                    net->biases[i]));
+    // Storing the derivatives of the activation function through propagation
+    Mat **derivVals = init_h_layers();
+
+    preVals[0] = mat_add(mat_multiply(net->weights[0], input), net->biases[0]);
+    // net->hiddenLayers[0] = apply(actFnct, preVals[0]);
+    // derivVals[0] = apply(dsigmoid, preVals[0]);
+
+    for (int i = 0; i < NUM_H_LAYER_NODES[0]; i++) {
+        net->hiddenLayers[0]->values[i][0] = actFnct(preVals[0]->values[i][0]);
+        derivVals[0]->values[i][0] = dsigmoid(preVals[0]->values[i][0]);
     }
 
-    Mat *output = mat_init(OUTPUT_SIZE, 1);
-    output = (mat_add(mat_multiply(net->weights[NUM_H_LAYERS],
-                                   net->hiddenLayers[NUM_H_LAYERS - 1]),
-                      net->biases[NUM_H_LAYERS]));
-    return output;
+    for (int i = 1; i < NUM_H_LAYERS; i++) {
+        preVals[i] =
+            mat_add(mat_multiply(net->weights[i], net->hiddenLayers[i - 1]),
+                    net->biases[i]);
+        // net->hiddenLayers[i] = apply(actFnct, preVals[i]);
+        // derivVals[i] = apply(dsigmoid, preVals[i]);
+        for (int j = 0; j < NUM_H_LAYER_NODES[i]; j++) {
+            net->hiddenLayers[i]->values[j][0] =
+                actFnct(preVals[i]->values[j][0]);
+            derivVals[i]->values[j][0] = dsigmoid(preVals[0]->values[j][0]);
+        }
+    }
+
+    Mat *preOutput = (mat_add(mat_multiply(net->weights[NUM_H_LAYERS],
+                                           net->hiddenLayers[NUM_H_LAYERS - 1]),
+                              net->biases[NUM_H_LAYERS]));
+
+    for (int i = 0; i < NUM_H_LAYERS; i++) {
+        // mat_free(net->hiddenLayers[i]);
+        mat_free(preVals[i]);
+        net->hiddenLayers[i] = derivVals[i];
+    }
+
+    return preOutput;
 }
 int *init_labels(int dataSize) {
     int *labels = malloc(dataSize * sizeof(int));

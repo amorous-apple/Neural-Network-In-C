@@ -21,23 +21,17 @@ int main(int argc, char **argv) {
     weights[0] = fread_mat("./weights/weights1.txt");
     weights[1] = fread_mat("./weights/weights2.txt");
     Mat **biases = init_biases();
-    // Network *net = net_init(weights, biases);
 
-    int sampleID = 0;
-    Mat *errorOutput = error_output(sigmoid, trainingData[sampleID], weights,
-                                    biases, labels[sampleID]);
+    int sampleID = 2;
+
+    Mat **errors = calc_errors(sigmoid, trainingData[sampleID], weights, biases,
+                               labels[sampleID]);
 
     mat_unflatten(&trainingData[sampleID], 28);
     mat_printI(trainingData[sampleID]);
-    mat_flatten(&trainingData[sampleID]);
 
-    printf("errorOutput:\n");
-    mat_print(errorOutput);
+    // printf("errorOutput:\n");
+    // mat_print(errors[0]);
 
-    // Mat **weights = init_weights();
-    // weights[0] = fread_mat("./weights/weights1.txt");
-    // weights[1] = fread_mat("./weights/weights2.txt");
-    // Mat **biases = init_biases();
-    //
-    // test_weights(weights, biases);
+    test_weights(weights, biases);
 }

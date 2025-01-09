@@ -1,6 +1,6 @@
 #include "utils_mat.h"
 
-// Initializing a matrix struct to store the size of the matrix an its values
+// Initializing a matrix struct to store the size of the matrix and its values
 Mat *mat_init(int rows, int cols) {
     Mat *matrix = malloc(sizeof(Mat));
     if (matrix == NULL) {
@@ -234,4 +234,17 @@ Mat *schur_product(Mat *A, Mat *B) {
     }
 
     return results;
+}
+
+// Returning a matrix that is the transpose of M
+Mat *mat_transpose(Mat *M) {
+    Mat *mT = mat_init(M->cols, M->rows);
+
+    for (int i = 0; i < mT->rows; i++) {
+        for (int j = 0; j < mT->cols; j++) {
+            mT->values[i][j] = M->values[j][i];
+        }
+    }
+
+    return mT;
 }
