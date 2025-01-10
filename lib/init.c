@@ -7,15 +7,15 @@ const int TRAINING_DATA_SIZE = 60000;
 
 double LEARNING_RATE = 0.1;
 int NUM_H_LAYERS;
-int *NUM_H_LAYER_NODES;
+int *NUM_LAYER_NODES;
 
 void init(int argc, char **argv) {
     if (argc == 1) {
         NUM_H_LAYERS = 1;
-        int pre_h_layer_nodes[] = {300};
-        NUM_H_LAYER_NODES = malloc(NUM_H_LAYERS * sizeof(int));
-        for (int i = 0; i < NUM_H_LAYERS; i++) {
-            NUM_H_LAYER_NODES[i] = pre_h_layer_nodes[i];
+        int num_layer_nodes[] = {300, OUTPUT_SIZE};
+        NUM_LAYER_NODES = malloc(NUM_H_LAYERS * sizeof(int));
+        for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
+            NUM_LAYER_NODES[i] = num_layer_nodes[i];
         }
         return;
     } else if (argc == 2 || argc != atoi(argv[1]) + 2) {
@@ -27,11 +27,12 @@ void init(int argc, char **argv) {
         exit(EXIT_FAILURE);
     } else {
         NUM_H_LAYERS = atoi(argv[1]);
-        NUM_H_LAYER_NODES = malloc(NUM_H_LAYERS * sizeof(int));
+        NUM_LAYER_NODES = malloc(NUM_H_LAYERS * sizeof(int));
 
         for (int i = 0; i < NUM_H_LAYERS; i++) {
-            NUM_H_LAYER_NODES[i] = atoi(argv[i + 2]);
+            NUM_LAYER_NODES[i] = atoi(argv[i + 2]);
         }
+        NUM_LAYER_NODES[NUM_H_LAYERS] = OUTPUT_SIZE;
         return;
     }
 }

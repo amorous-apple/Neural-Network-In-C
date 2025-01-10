@@ -25,11 +25,22 @@ double sigmoid(double input) { return 1.0 / (1 + exp(-input)); }
 double dsigmoid(double input) { return exp(input) / pow(exp(input) + 1, 2); }
 
 // Running the ReLu function on all values of an input matrix m
-Mat *apply(double (*ptr)(double), Mat *m) {
+Mat *apply1(double (*ptr)(double), Mat *m) {
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
             m->values[i][j] = ptr(m->values[i][j]);
         }
     }
     return m;
+}
+
+// Creating a Mat* with ReLu applied to all values of Mat *m
+Mat *apply2(double (*ptr)(double), Mat *m) {
+    Mat *result = mat_init(m->rows, m->cols);
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            result->values[i][j] = ptr(m->values[i][j]);
+        }
+    }
+    return result;
 }

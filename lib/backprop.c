@@ -3,9 +3,9 @@
 // Calculating the error for the last layer assuming a quadratic cost function
 Mat *error_output(double (*actFnct)(double), Mat *input, Network *net,
                   int label) {
-    // Mat *errorOutput = mat_init(OUTPUT_SIZE, 1);
+    propagate(actFnct, input, net);
 
-    Mat *preOutput = prePropagate(actFnct, input, net);
+    Mat *preOutput = net->preLayers[NUM_H_LAYERS];
     printf("preOutput:\n");
     mat_print(preOutput);
 
@@ -57,7 +57,7 @@ Mat **calc_errors(double (*actFnct)(double), Mat *input, Mat **weights,
     for (int i = NUM_H_LAYERS - 1; i >= 0; i--) {
         errors[i] = schur_product(
             mat_multiply(mat_transpose(weights[i + 1]), errors[i + 1]),
-            net->hiddenLayers[i]);
+            net->layers[i]);
     }
 
     net_free(net);

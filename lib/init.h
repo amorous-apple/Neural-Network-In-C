@@ -13,7 +13,7 @@ extern const int TRAINING_DATA_SIZE;
 
 extern double LEARNING_RATE;
 extern int NUM_H_LAYERS;
-extern int *NUM_H_LAYER_NODES;
+extern int *NUM_LAYER_NODES;
 
 void init(int argc, char **argv);
 Mat **init_trainingData(int *labels);

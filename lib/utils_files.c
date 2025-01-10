@@ -22,6 +22,7 @@ FILE *openInputFile(char *fileName) {
     return inputData;
 }
 
+// Reading a stored matrix from a file
 Mat *fread_mat(char *filename) {
     FILE *pfile = openDataFile(filename);
 
@@ -43,7 +44,7 @@ Mat *fread_mat(char *filename) {
     return matrix;
 }
 
-// Reading the input data into a column vector
+// Reading the input data into a column vector and placing the label into *label
 Mat *dataToMat(FILE *pfile, int *label) {
     char tmpStr[MAX_LINE_LEN];
     fgets(tmpStr, MAX_LINE_LEN, pfile);
