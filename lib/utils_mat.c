@@ -167,8 +167,19 @@ Mat *mat_multiply(Mat *B, Mat *A) {
     return matrix;
 }
 
+// Multiplies all of the values in a matrix M by a scalar
+Mat *mat_multiply_scalar1(double n, Mat *M) {
+    for (int i = 0; i < M->rows; i++) {
+        for (int j = 0; j < M->cols; j++) {
+            M->values[i][j] *= n;
+        }
+    }
+
+    return M;
+}
+
 // Adding matrix src to matrix dest (changing matrix dest)
-Mat *mat_add(Mat *dest, Mat *src) {
+Mat *mat_add1(Mat *dest, Mat *src) {
     if (dest->rows != src->rows || dest->cols != src->cols) {
         printf("Invalid addition of matrices with sizes %dx%d with %dx%d\n",
                dest->rows, dest->cols, src->rows, src->cols);
@@ -185,7 +196,7 @@ Mat *mat_add(Mat *dest, Mat *src) {
 
 // Subtracting matrix src from matrix dest (dest = dest - src)(changing matrix
 // dest)
-Mat *mat_sub(Mat *dest, Mat *src) {
+Mat *mat_sub1(Mat *dest, Mat *src) {
     if (dest->rows != src->rows || dest->cols != src->cols) {
         printf("Invalid subtraction of matrices with sizes %dx%d with %dx%d\n",
                dest->rows, dest->cols, src->rows, src->cols);
@@ -198,6 +209,24 @@ Mat *mat_sub(Mat *dest, Mat *src) {
     }
 
     return dest;
+}
+
+// Like mat_sub1, but creates a new matrix and leaves the originals unmodified
+Mat *mat_sub2(Mat *dest, Mat *src) {
+    if (dest->rows != src->rows || dest->cols != src->cols) {
+        printf("Invalid subtraction of matrices with sizes %dx%d with %dx%d\n",
+               dest->rows, dest->cols, src->rows, src->cols);
+        exit(EXIT_FAILURE);
+    }
+    Mat *diff = mat_init(dest->rows, dest->cols);
+
+    for (int i = 0; i < dest->rows; i++) {
+        for (int j = 0; j < dest->cols; j++) {
+            diff->values[i][j] = dest->values[i][j] - src->values[i][j];
+        }
+    }
+
+    return diff;
 }
 
 // Returning the index of the greatest output values (the NN's guess)
@@ -219,7 +248,25 @@ int maxIndex(Mat *output) {
 
 // Calculating and returning the Schur Product (AKA Hadamard Product) of two
 // matrices A and B
-Mat *schur_product(Mat *A, Mat *B) {
+Mat *schur_product1(Mat *A, Mat *B) {
+    if (A->rows != B->rows || A->cols != B->cols) {
+        printf("Invalid Schur Product of %dx%d with %dx%d!\n", A->rows, A->cols,
+               B->rows, B->cols);
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < A->rows; i++) {
+        for (int j = 0; j < A->cols; j++) {
+            A->values[i][j] *= B->values[i][j];
+        }
+    }
+
+    return A;
+}
+
+// Like schur_product1, but produces a new matrix and leaves the originals
+// unmodified
+Mat *schur_product2(Mat *A, Mat *B) {
     if (A->rows != B->rows || A->cols != B->cols) {
         printf("Invalid Schur Product of %dx%d with %dx%d!\n", A->rows, A->cols,
                B->rows, B->cols);
@@ -235,9 +282,8 @@ Mat *schur_product(Mat *A, Mat *B) {
 
     return results;
 }
-
 // Returning a matrix that is the transpose of M
-Mat *mat_transpose(Mat *M) {
+Mat *mat_transpose2(Mat *M) {
     Mat *mT = mat_init(M->cols, M->rows);
 
     for (int i = 0; i < mT->rows; i++) {

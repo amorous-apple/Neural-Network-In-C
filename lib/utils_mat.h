@@ -27,10 +27,13 @@ double calc_random(double lowerBound, double upperBound);
 void mat_flatten(Mat **m);
 void mat_unflatten(Mat **m, int cols);
 Mat *mat_multiply(Mat *B, Mat *A);
-Mat *mat_add(Mat *dest, Mat *src);
-Mat *mat_sub(Mat *dest, Mat *src);
-Mat *schur_product(Mat *A, Mat *B);
-Mat *mat_transpose(Mat *M);
+Mat *mat_multiply_scalar1(double n, Mat *M);
+Mat *mat_add1(Mat *dest, Mat *src);
+Mat *mat_sub1(Mat *dest, Mat *src);
+Mat *mat_sub2(Mat *dest, Mat *src);
+Mat *schur_product1(Mat *A, Mat *B);
+Mat *schur_product2(Mat *A, Mat *B);
+Mat *mat_transpose2(Mat *M);
 
 int maxIndex(Mat *output);
 

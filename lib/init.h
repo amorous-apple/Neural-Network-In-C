@@ -11,9 +11,12 @@ extern const int OUTPUT_SIZE;
 extern const int MAX_LINE_LEN;
 extern const int TRAINING_DATA_SIZE;
 
-extern double LEARNING_RATE;
 extern int NUM_H_LAYERS;
 extern int *NUM_LAYER_NODES;
+
+extern double LEARNING_RATE;
+extern int NUM_EPOCHS;
+extern int BATCH_SIZE;
 
 void init(int argc, char **argv);
 Mat **init_trainingData(int *labels);

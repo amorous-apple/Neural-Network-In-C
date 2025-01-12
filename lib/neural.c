@@ -86,11 +86,11 @@ Mat **init_biases() {
 // the input, and the weights
 Mat *propagate(double (*actFnct)(double), Mat *input, Network *net) {
     net->preLayers[0] =
-        mat_add(mat_multiply(net->weights[0], input), net->biases[0]);
+        mat_add1(mat_multiply(net->weights[0], input), net->biases[0]);
     net->layers[0] = apply2(actFnct, net->preLayers[0]);
 
     for (int i = 1; i < NUM_H_LAYERS + 1; i++) {
-        net->preLayers[i] = mat_add(
+        net->preLayers[i] = mat_add1(
             mat_multiply(net->weights[i], net->layers[i - 1]), net->biases[i]);
         net->layers[i] = apply2(actFnct, net->preLayers[i]);
     }
@@ -127,7 +127,7 @@ void test_weights(Mat **weights, Mat **biases) {
         inputs[i] = dataToMat(testData, &labels[i]);
     }
 
-    printf("Test input read from file.\n");
+    // printf("Test input read from file.\n");
 
     int *guesses = malloc(dataSize * sizeof(int));
 #pragma omp parallel for
@@ -138,7 +138,7 @@ void test_weights(Mat **weights, Mat **biases) {
 
         net_free(net);
     }
-    printf("Input propagated through network.\n");
+    // printf("Input propagated through network.\n");
 
     // Checking guesses
     int numWrong = 0;
@@ -154,7 +154,7 @@ void test_weights(Mat **weights, Mat **biases) {
     }
 
     double percentWrong = ((double)numWrong / dataSize) * 100;
-    printf("Percent wrong: %lf %%", percentWrong);
+    printf("Percent wrong: %lf %%\n", percentWrong);
 
     fclose(testData);
     free(labels);

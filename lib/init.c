@@ -5,9 +5,12 @@ const int OUTPUT_SIZE = 10;
 const int MAX_LINE_LEN = 5000;
 const int TRAINING_DATA_SIZE = 60000;
 
-double LEARNING_RATE = 0.1;
 int NUM_H_LAYERS;
 int *NUM_LAYER_NODES;
+
+double LEARNING_RATE = 0.1;
+int NUM_EPOCHS = 10;
+int BATCH_SIZE = 16;
 
 void init(int argc, char **argv) {
     if (argc == 1) {

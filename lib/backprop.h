@@ -8,5 +8,9 @@
 Mat *error_output(double (*actFnct)(double), Mat *input, Network *net, int label);
 Mat **calc_errors(double (*actFnct)(double), Mat *input, Mat **weights,
                   Mat **biases, int label);
+void update_weights(double (*actFnct)(double), Mat **inputs, Mat **weights,
+                    Mat **biases, int *labels, int startingIndex);
+void traininator(double (*actFnct)(double), Mat **inputs, Mat **weights,
+                 Mat **biases, int *labels);
 
 #endif

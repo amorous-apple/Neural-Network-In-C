@@ -22,7 +22,16 @@ double drelu(double input) {
 double sigmoid(double input) { return 1.0 / (1 + exp(-input)); }
 
 // Running the derivative of the sigmoid function on input
-double dsigmoid(double input) { return exp(input) / pow(exp(input) + 1, 2); }
+double dsigmoid(double input) {
+    // double val = exp(input) / pow(exp(input) + 1, 2);
+    // if (isnan(val)) {
+    //     printf("Nan from input of %lf\n", input);
+    //     exit(EXIT_FAILURE);
+    // }
+
+    double val = sigmoid(input) * (1 - sigmoid(input));
+    return val;
+}
 
 // Running the ReLu function on all values of an input matrix m
 Mat *apply1(double (*ptr)(double), Mat *m) {
