@@ -22,6 +22,8 @@ void net_free(Network *net) {
         mat_free(net->preLayers[i]);
         mat_free(net->layers[i]);
     }
+    free(net->preLayers);
+    free(net->layers);
     free(net);
 }
 
@@ -40,7 +42,7 @@ Mat **init_layers() {
     return layers;
 }
 
-// Initializing matrices to store all of the weights
+// Initializing matrices with random numbers to store all of the weights
 Mat **init_weights() {
     Mat **weights = malloc((NUM_H_LAYERS + 1) * sizeof(Mat *));
     if (weights == NULL) {
@@ -58,6 +60,29 @@ Mat **init_weights() {
     // Initializing the weights with random values
     for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
         mat_populate_rand(weights[i]);
+    }
+
+    return weights;
+}
+
+// Initializing weights with 0 (for backpropagation)
+Mat **init_weightsZ() {
+    Mat **weights = malloc((NUM_H_LAYERS + 1) * sizeof(Mat *));
+    if (weights == NULL) {
+        perror("Error allocating memory for weights\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Weights connecting the input to the first hidden layer
+    weights[0] = mat_init(NUM_LAYER_NODES[0], MAT_SIZE * MAT_SIZE);
+
+    for (int i = 1; i < NUM_H_LAYERS + 1; i++) {
+        weights[i] = mat_init(NUM_LAYER_NODES[i], NUM_LAYER_NODES[i - 1]);
+    }
+
+    // Initializing the weights with random values
+    for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
+        mat_populate(weights[i], 0.0);
     }
 
     return weights;
@@ -138,7 +163,6 @@ void test_weights(Mat **weights, Mat **biases) {
 
         net_free(net);
     }
-    // printf("Input propagated through network.\n");
 
     // Checking guesses
     int numWrong = 0;

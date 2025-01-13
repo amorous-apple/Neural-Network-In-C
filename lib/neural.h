@@ -17,6 +17,7 @@ Network *net_init(Mat **weights, Mat **biases);
 void net_free(Network *net);
 Mat **init_layers();
 Mat **init_weights();
+Mat **init_weightsZ();
 Mat **init_biases();
 Mat *propagate(double (*actFnct)(double), Mat *input, Network *net);
 // Mat *prePropagate(double (*actFnct)(double), Mat *input, Network *net);
