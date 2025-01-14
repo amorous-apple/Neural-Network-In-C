@@ -8,8 +8,10 @@ Network *net_init(Mat **weights, Mat **biases) {
         exit(EXIT_FAILURE);
     }
 
-    net->preLayers = init_layers_empty();
-    net->layers = init_layers_empty();
+    // net->preLayers = init_layers_empty();
+    // net->layers = init_layers_empty();
+    net->preLayers = init_layers();
+    net->layers = init_layers();
     net->weights = weights;
     net->biases = biases;
 
@@ -136,14 +138,15 @@ Mat **init_biases() {
 // Calculating the output of the neural network using an activation function,
 // the input, and the weights
 Mat *propagate(double (*actFnct)(double), Mat *input, Network *net) {
-    net->preLayers[0] =
-        mat_add1(mat_multiply(net->weights[0], input), net->biases[0]);
-    net->layers[0] = apply2(actFnct, net->preLayers[0]);
+    mat_add1(mat_multiplyExt(net->weights[0], input, net->preLayers[0]),
+             net->biases[0]);
+    applyExt(actFnct, net->preLayers[0], net->layers[0]);
 
     for (int i = 1; i < NUM_H_LAYERS + 1; i++) {
-        net->preLayers[i] = mat_add1(
-            mat_multiply(net->weights[i], net->layers[i - 1]), net->biases[i]);
-        net->layers[i] = apply2(actFnct, net->preLayers[i]);
+        mat_add1(mat_multiplyExt(net->weights[i], net->layers[i - 1],
+                                 net->preLayers[i]),
+                 net->biases[i]);
+        applyExt(actFnct, net->preLayers[i], net->layers[i]);
     }
 
     Mat *output = net->layers[NUM_H_LAYERS];
@@ -178,8 +181,6 @@ void test_weightsClosed(Mat **weights, Mat **biases) {
         inputs[i] = dataToMat(testData, &labels[i]);
     }
 
-    // printf("Test input read from file.\n");
-
     int *guesses = malloc(TEST_DATA_SIZE * sizeof(int));
 #pragma omp parallel
     {
@@ -189,9 +190,8 @@ void test_weightsClosed(Mat **weights, Mat **biases) {
             propagate(sigmoid, inputs[i], net);
             Mat *output = net->layers[NUM_H_LAYERS];
             guesses[i] = maxIndex(output);
-            net_free_layerVals(net);
         }
-        net_free_empty(net);
+        net_free(net);
     }
 
     // Checking guesses
@@ -217,4 +217,36 @@ void test_weightsClosed(Mat **weights, Mat **biases) {
     }
     free(inputs);
     free(guesses);
+}
+
+// Like test_weightsClosed, but does not initialize inputs or labels when run
+void test_weights(Mat **weights, Mat **biases, Mat **trainingData, int *labels,
+                  int *guesses) {
+#pragma omp parallel
+    {
+        Network *net = net_init(weights, biases);
+#pragma omp for
+        for (int i = 0; i < TEST_DATA_SIZE; i++) {
+            propagate(sigmoid, trainingData[i], net);
+            Mat *output = net->layers[NUM_H_LAYERS];
+            guesses[i] = maxIndex(output);
+        }
+        net_free(net);
+    }
+
+    // Checking guesses
+    int numWrong = 0;
+    for (int i = 0; i < TEST_DATA_SIZE; i++) {
+        if (labels[i] != guesses[i]) {
+            // printf("Error at line %d\n", i + 2);
+            // printf("Label: %d\n", labels[i]);
+            // printf("Guess: %d\n", guesses[i]);
+            // mat_unflatten(&inputs[i], MAT_SIZE);
+            // mat_printI(inputs[i]);
+            numWrong++;
+        }
+    }
+
+    double percentWrong = ((double)numWrong / TEST_DATA_SIZE) * 100;
+    printf("Percent wrong: %lf %%\n", percentWrong);
 }

@@ -10,5 +10,6 @@ double sigmoid(double input);
 double dsigmoid(double input);
 Mat *apply1(double (*ptr)(double), Mat *m);
 Mat *apply2(double (*ptr)(double), Mat *m);
+Mat *applyExt(double (*fnctPtr)(double), Mat *m, Mat *dest);
 
 #endif

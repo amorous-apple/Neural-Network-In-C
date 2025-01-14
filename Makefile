@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -fopenmp -g
+CFLAGS = -Wall -Wextra -fopenmp -o2
 LDFLAGS = -lm -fopenmp
 
 # Define the executable name and build directory

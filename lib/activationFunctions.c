@@ -53,3 +53,20 @@ Mat *apply2(double (*fnctPtr)(double), Mat *m) {
     }
     return result;
 }
+
+// Like apply, but places the result into the destination matrix
+Mat *applyExt(double (*fnctPtr)(double), Mat *m, Mat *dest) {
+    if (m->rows != dest->rows || m->cols != dest->cols) {
+        printf(
+            "Invalid placement of applied %dx%d matrix into a %dx%d "
+            "destination matrix!\n",
+            m->rows, m->cols, dest->rows, dest->cols);
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            dest->values[i][j] = fnctPtr(m->values[i][j]);
+        }
+    }
+    return dest;
+}

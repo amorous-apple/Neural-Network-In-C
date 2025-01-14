@@ -95,13 +95,13 @@ void mat_populate2(Mat *m) {
 void mat_populate_rand(Mat *m) {
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            m->values[i][j] = calc_random(-1, 1);
+            m->values[i][j] = random_uniform(-1, 1);
         }
     }
 }
 
 // Calculating a random double between lowerBound and upperBound
-double calc_random(double lowerBound, double upperBound) {
+double random_uniform(double lowerBound, double upperBound) {
     double difference = upperBound - lowerBound;
 
     // Generating a random double between 0 and 1
@@ -109,6 +109,16 @@ double calc_random(double lowerBound, double upperBound) {
     double adjusted = (difference * rando) + lowerBound;
 
     return adjusted;
+}
+
+// Calculating a random normally distributed double
+double random_normal() {
+    double rand1 = random_uniform(0, 1);
+    double rand2 = random_uniform(0, 1);
+
+    double randNormal = sqrt(-2.0 * log(rand1)) * cos(2.0 * M_PI * rand2);
+
+    return randNormal;
 }
 
 // Flattening a matrix pointer m
@@ -167,6 +177,27 @@ Mat *mat_multiply(Mat *B, Mat *A) {
     return matrix;
 }
 
+// Like mat_multiply, but places the answer into the destination matrix
+Mat *mat_multiplyExt(Mat *B, Mat *A, Mat *dest) {
+    if (B->cols != A->rows || B->rows != dest->rows || A->cols != dest->cols) {
+        printf(
+            "Invalid matrix multiplication of %dx%d with %dx%d placed into a "
+            "matrix of size %dx%d!\n",
+            B->rows, B->cols, A->rows, A->cols, dest->rows, dest->cols);
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < dest->rows; i++) {
+        for (int j = 0; j < dest->cols; j++) {
+            double subTotal = 0;
+            for (int k = 0; k < A->rows; k++) {
+                subTotal += A->values[k][j] * B->values[i][k];
+            }
+
+            dest->values[i][j] = subTotal;
+        }
+    }
+    return dest;
+}
 // Multiplies all of the values in a matrix M by a scalar
 Mat *mat_multiply_scalar1(double n, Mat *M) {
     for (int i = 0; i < M->rows; i++) {
@@ -212,23 +243,42 @@ Mat *mat_sub1(Mat *dest, Mat *src) {
 }
 
 // Like mat_sub1, but creates a new matrix and leaves the originals unmodified
-Mat *mat_sub2(Mat *dest, Mat *src) {
-    if (dest->rows != src->rows || dest->cols != src->cols) {
+Mat *mat_sub2(Mat *A, Mat *B) {
+    if (A->rows != B->rows || A->cols != B->cols) {
         printf("Invalid subtraction of matrices with sizes %dx%d with %dx%d\n",
-               dest->rows, dest->cols, src->rows, src->cols);
+               A->rows, A->cols, B->rows, B->cols);
         exit(EXIT_FAILURE);
     }
-    Mat *diff = mat_init(dest->rows, dest->cols);
+    Mat *diff = mat_init(A->rows, A->cols);
 
-    for (int i = 0; i < dest->rows; i++) {
-        for (int j = 0; j < dest->cols; j++) {
-            diff->values[i][j] = dest->values[i][j] - src->values[i][j];
+    for (int i = 0; i < A->rows; i++) {
+        for (int j = 0; j < A->cols; j++) {
+            diff->values[i][j] = A->values[i][j] - B->values[i][j];
         }
     }
 
     return diff;
 }
 
+// Like mat_sub, but places the difference in a destination matrix
+Mat *mat_subExt(Mat *A, Mat *B, Mat *dest) {
+    if (A->rows != B->rows || A->cols != B->cols || A->rows != dest->rows ||
+        A->cols != dest->cols) {
+        printf(
+            "Invalid subtraction of matrices with sizes %dx%d with %dx%d "
+            "placed into a matrix of size %dx%d\n",
+            A->rows, A->cols, B->rows, B->cols, dest->rows, dest->cols);
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < A->rows; i++) {
+        for (int j = 0; j < A->cols; j++) {
+            dest->values[i][j] = A->values[i][j] - B->values[i][j];
+        }
+    }
+
+    return dest;
+}
 // Returning the index of the greatest output values (the NN's guess)
 int maxIndex(Mat *output) {
     if (output->cols != 1) {

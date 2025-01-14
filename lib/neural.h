@@ -26,5 +26,6 @@ Mat *propagate(double (*actFnct)(double), Mat *input, Network *net);
 // Mat *prePropagate(double (*actFnct)(double), Mat *input, Network *net);
 int *init_labels(int dataSize);
 void test_weightsClosed(Mat **weights, Mat **biases);
+void test_weights(Mat **weights, Mat **biases, Mat **trainingData, int *labels, int *guesses);
 
 #endif

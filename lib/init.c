@@ -9,8 +9,8 @@ const int TRAINING_DATA_SIZE = 60000;
 int NUM_H_LAYERS;
 int *NUM_LAYER_NODES;
 
-double LEARNING_RATE = 3.0;
-int NUM_EPOCHS = 2;
+double LEARNING_RATE = 0.3;
+int NUM_EPOCHS = 500;
 int BATCH_SIZE = 16;
 
 void init(int argc, char **argv) {

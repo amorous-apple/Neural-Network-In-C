@@ -2,7 +2,7 @@
 
 // Calculating the error for the last layer assuming a quadratic cost function
 Mat *error_output(double (*actFnct)(double), Mat *input, Network *net,
-                  int label) {
+                  int label, Mat *errorOutMat) {
     propagate(actFnct, input, net);
 
     Mat *preOutput = net->preLayers[NUM_H_LAYERS];
@@ -20,25 +20,23 @@ Mat *error_output(double (*actFnct)(double), Mat *input, Network *net,
         derivOutput->values[i][0] = dsigmoid(preOutput->values[i][0]);
     }
 
-    Mat *errorOutput =
-        schur_product1(mat_sub2(output, expectedVal), derivOutput);
+    // // errorOutput based on the quadratic cost function
+    // schur_product1(mat_subExt(output, expectedVal, errorOutMat),
+    // derivOutput);
+
+    // errorOutput based on cross-entropy
+    mat_subExt(output, expectedVal, errorOutMat);
 
     mat_free(expectedVal);
     mat_free(derivOutput);
 
-    return errorOutput;
+    return errorOutMat;
 };
 
 // Calculating all of the errors assuming a quadratic cost function
 Mat **calc_errors(double (*actFnct)(double), Mat *input, Network *net,
-                  int label) {
-    Mat **errors = malloc((NUM_H_LAYERS + 1) * sizeof(Mat *));
-    if (errors == NULL) {
-        perror("Error allocating memory for **errors\n");
-        exit(EXIT_FAILURE);
-    }
-
-    errors[NUM_H_LAYERS] = error_output(actFnct, input, net, label);
+                  int label, Mat **errors) {
+    error_output(actFnct, input, net, label, errors[NUM_H_LAYERS]);
 
     for (int i = NUM_H_LAYERS - 1; i >= 0; i--) {
         Mat *derivOutput = mat_init(NUM_LAYER_NODES[i], 1);
@@ -47,8 +45,8 @@ Mat **calc_errors(double (*actFnct)(double), Mat *input, Network *net,
                 dsigmoid(net->preLayers[i]->values[j][0]);
         }
         Mat *Tweights = mat_transpose2(net->weights[i + 1]);
-        Mat *prod = mat_multiply(Tweights, errors[i + 1]);
-        errors[i] = schur_product1(prod, derivOutput);
+        mat_multiplyExt(Tweights, errors[i + 1], errors[i]);
+        schur_product1(errors[i], derivOutput);
 
         mat_free(derivOutput);
         mat_free(Tweights);
@@ -60,25 +58,14 @@ Mat **calc_errors(double (*actFnct)(double), Mat *input, Network *net,
 
 // Updating the weights and biases based on a starting point in the data set
 void update_weights(double (*actFnct)(double), Mat **inputs, Mat **weights,
-                    Mat **biases, int *labels, int startingIndex) {
-    Network **nets = malloc(BATCH_SIZE * sizeof(Network *));
-    if (nets == NULL) {
-        perror("Error allocating memory for nets\n");
-        exit(EXIT_FAILURE);
-    }
-    Mat ***batchErrors = malloc(BATCH_SIZE * sizeof(Mat **));
-    if (batchErrors == NULL) {
-        perror("Error allocating memory for batchErrors\n");
-        exit(EXIT_FAILURE);
-    }
-
+                    Mat **biases, int *labels, int startingIndex,
+                    Network **nets, Mat ***batchErrors) {
 // Calculating and storing all of the errors
 #pragma omp parallel for
     for (int i = 0; i < BATCH_SIZE; i++) {
         int index = startingIndex + i;
-        nets[i] = net_init(weights, biases);
-        batchErrors[i] =
-            calc_errors(actFnct, inputs[index], nets[i], labels[index]);
+        batchErrors[i] = calc_errors(actFnct, inputs[index], nets[i],
+                                     labels[index], batchErrors[i]);
     }
 
     double learningConst = -LEARNING_RATE / BATCH_SIZE;
@@ -132,34 +119,90 @@ void update_weights(double (*actFnct)(double), Mat **inputs, Mat **weights,
     for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
         mat_add1(biases[i], batchErrors[0][i]);
     }
-
-    // Freeing all of the nets and errors
-    for (int i = 0; i < BATCH_SIZE; i++) {
-        for (int j = 0; j < NUM_H_LAYERS + 1; j++) {
-            mat_free(batchErrors[i][j]);
-        }
-        net_free(nets[i]);
-    }
-    free(nets);
-    free(batchErrors);
 }
 
 // Training the weights and biases
 void traininator(double (*actFnct)(double), Mat **inputs, Mat **weights,
                  Mat **biases, int *labels) {
     int num_batches = TRAINING_DATA_SIZE / BATCH_SIZE;
-    // int num_batches = 1;
+
+    FILE *testData = openInputFile("./data/mnist_test.csv");
+
+    // Loading all of the data into an array of matrices and labels
+    int *trainingLabels = init_labels(TEST_DATA_SIZE);
+
+    Mat **trainingInputs = malloc(TEST_DATA_SIZE * sizeof(Mat *));
+    if (trainingInputs == NULL) {
+        perror("Error allocating memory for trainingInputs\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < TEST_DATA_SIZE; i++) {
+        trainingInputs[i] = dataToMat(testData, &trainingLabels[i]);
+    }
+    fclose(testData);
+
+    int *guesses = malloc(TEST_DATA_SIZE * sizeof(int));
+    if (guesses == NULL) {
+        perror("Error allocating memory for guesses\n");
+        exit(EXIT_FAILURE);
+    }
+
+    Network **nets = malloc(BATCH_SIZE * sizeof(Network *));
+    if (nets == NULL) {
+        perror("Error allocating memory for nets\n");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < BATCH_SIZE; i++) {
+        nets[i] = net_init(weights, biases);
+    }
+
+    Mat ***batchErrors = malloc(BATCH_SIZE * sizeof(Mat **));
+    if (batchErrors == NULL) {
+        perror("Error allocating memory for batchErrors\n");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < BATCH_SIZE; i++) {
+        batchErrors[i] = malloc((NUM_H_LAYERS + 1) * sizeof(Mat *));
+        if (batchErrors[i] == NULL) {
+            perror("Error allocating memory for **errors\n");
+            exit(EXIT_FAILURE);
+        }
+        for (int j = 0; j < NUM_H_LAYERS + 1; j++) {
+            batchErrors[i][j] = mat_init(NUM_LAYER_NODES[j], 1);
+        }
+    }
 
     for (int i = 0; i < NUM_EPOCHS; i++) {
         printf("Epoch %d / %d\n", i + 1, NUM_EPOCHS);
         for (int j = 0; j < num_batches; j++) {
             int startingIndex = j * BATCH_SIZE;
             update_weights(actFnct, inputs, weights, biases, labels,
-                           startingIndex);
-            if ((j + 1) % 10 == 0) {
-                printf("Batch %d / %d\n", j + 1, num_batches);
-                test_weightsClosed(weights, biases);
-            }
+                           startingIndex, nets, batchErrors);
+            // if ((j + 1) % 500 == 0) {
+            //     printf("Batch %d / %d\n", j + 1, num_batches);
+            //     test_weights(weights, biases, trainingInputs, trainingLabels,
+            //                  guesses);
+            // }
         }
+        test_weights(weights, biases, trainingInputs, trainingLabels, guesses);
     }
+
+    free(trainingLabels);
+    for (int i = 0; i < TEST_DATA_SIZE; i++) {
+        mat_free(trainingInputs[i]);
+    }
+    free(trainingInputs);
+    free(guesses);
+
+    // Freeing all of the nets and errors
+    for (int i = 0; i < BATCH_SIZE; i++) {
+        for (int j = 0; j < NUM_H_LAYERS + 1; j++) {
+            mat_free(batchErrors[i][j]);
+        }
+        free(batchErrors[i]);
+        net_free(nets[i]);
+    }
+    free(nets);
+    free(batchErrors);
 }
