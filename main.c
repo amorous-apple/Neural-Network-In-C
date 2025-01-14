@@ -10,7 +10,7 @@
 
 int main(int argc, char **argv) {
     // Setting the seed for rand()
-    // srand(time(NULL));
+    srand(time(NULL));
 
     init(argc, argv);
 
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     int *labels = init_labels(TRAINING_DATA_SIZE);
     Mat **trainingData = init_trainingData(labels);
 
-    test_weights(weights, biases);
+    test_weightsClosed(weights, biases);
 
     printf("Starting training\n");
     traininator(sigmoid, trainingData, weights, biases, labels);
@@ -31,9 +31,12 @@ int main(int argc, char **argv) {
         mat_free(weights[i]);
         mat_free(biases[i]);
     }
+    free(weights);
+    free(biases);
     free(labels);
     for (int i = 0; i < TRAINING_DATA_SIZE; i++) {
         mat_free(trainingData[i]);
     }
+    free(trainingData);
     free(NUM_LAYER_NODES);
 }

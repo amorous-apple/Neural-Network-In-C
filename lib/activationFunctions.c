@@ -33,22 +33,22 @@ double dsigmoid(double input) {
     return val;
 }
 
-// Running the ReLu function on all values of an input matrix m
-Mat *apply1(double (*ptr)(double), Mat *m) {
+// Running the activation function on all values of an input matrix m
+Mat *apply1(double (*fnctPtr)(double), Mat *m) {
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            m->values[i][j] = ptr(m->values[i][j]);
+            m->values[i][j] = fnctPtr(m->values[i][j]);
         }
     }
     return m;
 }
 
-// Creating a Mat* with ReLu applied to all values of Mat *m
-Mat *apply2(double (*ptr)(double), Mat *m) {
+// Creating a Mat* with the activation function applied to all values of Mat *m
+Mat *apply2(double (*fnctPtr)(double), Mat *m) {
     Mat *result = mat_init(m->rows, m->cols);
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            result->values[i][j] = ptr(m->values[i][j]);
+            result->values[i][j] = fnctPtr(m->values[i][j]);
         }
     }
     return result;

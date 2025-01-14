@@ -9,6 +9,7 @@
 extern const int MAT_SIZE;
 extern const int OUTPUT_SIZE;
 extern const int MAX_LINE_LEN;
+extern const int TEST_DATA_SIZE;
 extern const int TRAINING_DATA_SIZE;
 
 extern int NUM_H_LAYERS;

@@ -3,13 +3,14 @@
 const int MAT_SIZE = 28;
 const int OUTPUT_SIZE = 10;
 const int MAX_LINE_LEN = 5000;
+const int TEST_DATA_SIZE = 10000;
 const int TRAINING_DATA_SIZE = 60000;
 
 int NUM_H_LAYERS;
 int *NUM_LAYER_NODES;
 
 double LEARNING_RATE = 3.0;
-int NUM_EPOCHS = 10;
+int NUM_EPOCHS = 2;
 int BATCH_SIZE = 16;
 
 void init(int argc, char **argv) {
@@ -51,5 +52,6 @@ Mat **init_trainingData(int *labels) {
     for (int i = 0; i < TRAINING_DATA_SIZE; i++) {
         trainingData[i] = dataToMat(trainingDataFile, &labels[i]);
     }
+    fclose(trainingDataFile);
     return trainingData;
 }

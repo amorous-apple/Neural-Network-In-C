@@ -8,8 +8,8 @@ Network *net_init(Mat **weights, Mat **biases) {
         exit(EXIT_FAILURE);
     }
 
-    net->preLayers = init_layers();
-    net->layers = init_layers();
+    net->preLayers = init_layers_empty();
+    net->layers = init_layers_empty();
     net->weights = weights;
     net->biases = biases;
 
@@ -27,6 +27,21 @@ void net_free(Network *net) {
     free(net);
 }
 
+// Free a network with empty layers
+void net_free_empty(Network *net) {
+    free(net->preLayers);
+    free(net->layers);
+    free(net);
+}
+
+// Freeing the values stored in a Network *'s layers
+void net_free_layerVals(Network *net) {
+    for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
+        mat_free(net->preLayers[i]);
+        mat_free(net->layers[i]);
+    }
+}
+
 // Initializing matrices to store all of the layer outputs/ preOutputs
 Mat **init_layers() {
     Mat **layers = malloc((NUM_H_LAYERS + 1) * sizeof(Mat *));
@@ -37,6 +52,17 @@ Mat **init_layers() {
 
     for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
         layers[i] = mat_init(NUM_LAYER_NODES[i], 1);
+    }
+
+    return layers;
+}
+
+// Initializing pointers to store the layers
+Mat **init_layers_empty() {
+    Mat **layers = malloc((NUM_H_LAYERS + 1) * sizeof(Mat *));
+    if (layers == NULL) {
+        perror("Error allocating memory for layers\n");
+        exit(EXIT_FAILURE);
     }
 
     return layers;
@@ -134,39 +160,43 @@ int *init_labels(int dataSize) {
 }
 
 // Testing the percent error yielded by the given weights and biases when
-// running the test data
-void test_weights(Mat **weights, Mat **biases) {
+// running the test data (a 'closed' function that does not require the inputs
+// to be supplied)
+void test_weightsClosed(Mat **weights, Mat **biases) {
     FILE *testData = openInputFile("./data/mnist_test.csv");
-    int dataSize = 10000;
 
     // Loading all of the data into an array of matrices and labels
-    int *labels = init_labels(dataSize);
+    int *labels = init_labels(TEST_DATA_SIZE);
 
-    Mat **inputs = malloc(dataSize * sizeof(Mat *));
+    Mat **inputs = malloc(TEST_DATA_SIZE * sizeof(Mat *));
     if (inputs == NULL) {
         perror("Error allocating memory for inputs\n");
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0; i < dataSize; i++) {
+    for (int i = 0; i < TEST_DATA_SIZE; i++) {
         inputs[i] = dataToMat(testData, &labels[i]);
     }
 
     // printf("Test input read from file.\n");
 
-    int *guesses = malloc(dataSize * sizeof(int));
-#pragma omp parallel for
-    for (int i = 0; i < dataSize; i++) {
+    int *guesses = malloc(TEST_DATA_SIZE * sizeof(int));
+#pragma omp parallel
+    {
         Network *net = net_init(weights, biases);
-        Mat *output = propagate(sigmoid, inputs[i], net);
-        guesses[i] = maxIndex(output);
-
-        net_free(net);
+#pragma omp for
+        for (int i = 0; i < TEST_DATA_SIZE; i++) {
+            propagate(sigmoid, inputs[i], net);
+            Mat *output = net->layers[NUM_H_LAYERS];
+            guesses[i] = maxIndex(output);
+            net_free_layerVals(net);
+        }
+        net_free_empty(net);
     }
 
     // Checking guesses
     int numWrong = 0;
-    for (int i = 0; i < dataSize; i++) {
+    for (int i = 0; i < TEST_DATA_SIZE; i++) {
         if (labels[i] != guesses[i]) {
             // printf("Error at line %d\n", i + 2);
             // printf("Label: %d\n", labels[i]);
@@ -177,13 +207,14 @@ void test_weights(Mat **weights, Mat **biases) {
         }
     }
 
-    double percentWrong = ((double)numWrong / dataSize) * 100;
+    double percentWrong = ((double)numWrong / TEST_DATA_SIZE) * 100;
     printf("Percent wrong: %lf %%\n", percentWrong);
 
     fclose(testData);
     free(labels);
-    for (int i = 0; i < dataSize; i++) {
+    for (int i = 0; i < TEST_DATA_SIZE; i++) {
         mat_free(inputs[i]);
     }
+    free(inputs);
     free(guesses);
 }

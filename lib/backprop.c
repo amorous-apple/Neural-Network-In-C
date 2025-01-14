@@ -112,6 +112,9 @@ void update_weights(double (*actFnct)(double), Mat **inputs, Mat **weights,
             mat_free(prod);
         }
     }
+    for (int i = 1; i < NUM_H_LAYERS + 1; i++) {
+        mat_free(weightsShift[i]);
+    }
     free(weightsShift);
 
     // Averaging the errors for a batch
@@ -153,11 +156,10 @@ void traininator(double (*actFnct)(double), Mat **inputs, Mat **weights,
             int startingIndex = j * BATCH_SIZE;
             update_weights(actFnct, inputs, weights, biases, labels,
                            startingIndex);
-            if ((j + 1) % 100 == 0) {
+            if ((j + 1) % 10 == 0) {
                 printf("Batch %d / %d\n", j + 1, num_batches);
-                test_weights(weights, biases);
+                test_weightsClosed(weights, biases);
             }
         }
-        // test_weights(weights, biases);
     }
 }
