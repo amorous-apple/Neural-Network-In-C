@@ -36,7 +36,9 @@ Mat *mat_sub2(Mat *A, Mat *B);
 Mat *mat_subExt(Mat *A, Mat *B, Mat *dest);
 Mat *schur_product1(Mat *A, Mat *B);
 Mat *schur_product2(Mat *A, Mat *B);
+Mat *mat_transpose1(Mat **M);
 Mat *mat_transpose2(Mat *M);
+Mat *mat_transposeExt(Mat *M, Mat *dest);
 
 int maxIndex(Mat *output);
 

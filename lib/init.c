@@ -9,14 +9,23 @@ const int TRAINING_DATA_SIZE = 60000;
 int NUM_H_LAYERS;
 int *NUM_LAYER_NODES;
 
-double LEARNING_RATE = 0.3;
+double LEARNING_RATE = 0.5;
+double LEARNING_RATE_TERM;
 int NUM_EPOCHS = 500;
 int BATCH_SIZE = 16;
 
+const double REGULARIZATION_PARAMETER = 0.1;
+double REGULARIZATION_TERM;
+
 void init(int argc, char **argv) {
+    REGULARIZATION_TERM =
+        1.0 - (LEARNING_RATE * REGULARIZATION_PARAMETER / TRAINING_DATA_SIZE);
+    LEARNING_RATE_TERM = -LEARNING_RATE / BATCH_SIZE;
+    // printf("Reg_term: %.8lf\n", REGULARIZATION_TERM);
+    // printf("Lr_term: %lf\n", LEARNING_RATE_TERM);
     if (argc == 1) {
         NUM_H_LAYERS = 1;
-        int num_layer_nodes[] = {300, OUTPUT_SIZE};
+        int num_layer_nodes[] = {25, OUTPUT_SIZE};
         NUM_LAYER_NODES = malloc((NUM_H_LAYERS + 1) * sizeof(int));
         for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
             NUM_LAYER_NODES[i] = num_layer_nodes[i];

@@ -16,8 +16,12 @@ extern int NUM_H_LAYERS;
 extern int *NUM_LAYER_NODES;
 
 extern double LEARNING_RATE;
+extern double LEARNING_RATE_TERM;
 extern int NUM_EPOCHS;
 extern int BATCH_SIZE;
+
+extern const double REGULARIZATION_PARAMETER;
+extern double REGULARIZATION_TERM;
 
 void init(int argc, char **argv);
 Mat **init_trainingData(int *labels);

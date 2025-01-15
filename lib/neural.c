@@ -108,7 +108,7 @@ Mat **init_weightsZ() {
         weights[i] = mat_init(NUM_LAYER_NODES[i], NUM_LAYER_NODES[i - 1]);
     }
 
-    // Initializing the weights with random values
+    // Initializing the weights with 0.0
     for (int i = 0; i < NUM_H_LAYERS + 1; i++) {
         mat_populate(weights[i], 0.0);
     }

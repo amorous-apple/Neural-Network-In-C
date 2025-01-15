@@ -332,6 +332,21 @@ Mat *schur_product2(Mat *A, Mat *B) {
 
     return results;
 }
+
+// Replacing a matrix with its transpose
+Mat *mat_transpose1(Mat **M) {
+    Mat *temp = mat_init((*M)->cols, (*M)->rows);
+    for (int i = 0; i < temp->rows; i++) {
+        for (int j = 0; j < temp->cols; j++) {
+            temp->values[i][j] = (*M)->values[j][i];
+        }
+    }
+
+    mat_free(*M);
+    *M = temp;
+    return *M;
+}
+
 // Returning a matrix that is the transpose of M
 Mat *mat_transpose2(Mat *M) {
     Mat *mT = mat_init(M->cols, M->rows);
@@ -343,4 +358,23 @@ Mat *mat_transpose2(Mat *M) {
     }
 
     return mT;
+}
+
+// Placing the transpose of a matrix into the given destination matrix
+Mat *mat_transposeExt(Mat *M, Mat *dest) {
+    if (M->rows != dest->cols || M->cols != dest->rows) {
+        printf(
+            "Invalid placement of transpose for a %dx%d matrix into a %dx%d "
+            "matrix!\n",
+            M->rows, M->cols, dest->rows, dest->cols);
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < dest->rows; i++) {
+        for (int j = 0; j < dest->cols; j++) {
+            dest->values[i][j] = M->values[j][i];
+        }
+    }
+
+    return dest;
 }
